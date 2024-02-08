@@ -1,4 +1,4 @@
-// console.log('Web serverni boshlash');
+console.log('Web serverni boshlash');
 const express = require("express");
 const app = express();
 
