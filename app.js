@@ -1,84 +1,86 @@
-console.log('Web serverni boshlash');
+console.log("Web serverni boshlash");
+const http = require("http");
 const express = require("express");
 const app = express();
-const router = require("./router.js");
+const router = require("./router");
+const router_bssr = require("./router_bssr");
+const cors = require('cors');
+const cookieParser = require("cookie-parser");
 
+let session = require("express-session");
+const MongoDbStore = require("connect-mongodb-session")(session); //mongoDB storagesini hosil qilishda yordam beradi. uni ichiga express - sessionni beramiz. MongoDb Storage bu class.
 
-// MongoDB chaqirish
-const db = require("./server").db();
-const mongodb = require("mongodb");
+const store = new MongoDbStore({
+  uri: process.env.MONGO_URL,
+  collection: "sessions", //shu nom bilan mongodb collection hosil boladi.
+});
 
+// 1: Kirish kodlari.
+app.use(express.static("public"));
+app.use("/uploads", express.static(__dirname + "/uploads"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false })); //formdan post qilingan narsalarni express qabul qiladi.
+app.use(cors({
+  credentials: true,
+  origin: true,
+}));
+app.use(cookieParser());
 
-
-// 1: Kirish 
-app.use(express.static("public")); 
-app.use(express.json()); 
-app.use(express.urlencoded({extended: true})); 
-
-// 2 Session 
+// 2 Session larga bog'liq bo'lgan codelar yoziladi Requestni ichida sessionlarni hosil qilib beradi.
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    cookie: {
+      maxAge: 1000 * 60 * 60, //for 60 minutes
+    },
+    store: store, //mongodb da yuqoridagi sessions collectionida saqlasin
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+app.use((req, res, next) => {
+  res.locals.member = req.session.member; //response= locals vari ichidagi member vari ga session memberni yukla. sessionni databasedan izlaydi bolsa memberga yuklab beradi yopishtirib.
+  next();
+});
 
 // 3 View code
 app.set("views", "views");
 app.set("view engine", "ejs");
 
 // 4 Routing code
+app.use("/resto", router_bssr); //for  BSSR
+app.use("/", router); // for restAPI ::: har qanday kelgan requestni router filega yubor;
 
-app.use("/", router);
-// app.post('/create-item', (req, res)=>{
-//     console.log("user entered /create-item");
-//     const new_reja = req.body.reja;
-//     db.collection("plans").insertOne({reja: new_reja}, (err, data) => {
-//         console.log(data.ops);
-//         res.json(data.ops[0]);
-//     });
-// });
 
-// app.post("/delete-item", (req, res)=>{
-//     const id = req.body.id;
-//     console.log(id);
-//     db.collection("plans").deleteOne(
-//         {_id: new mongodb.ObjectId(id)}, 
-//         (err, data)=>{
-//         res.json({state: "success"});
-//     }); 
-    
-// });
 
-// app.post("/edit-item", (req, res)=>{
-//     const data = req.body
-//     db.collection("plans").findOneAndUpdate(
-//         {_id: new mongodb.ObjectId(data.id)},
-//         {$set: {reja: data.new_input}},
-//         (err, data)=>{
-//         res.json({state: "success"});
-//     }
-//     );
-// });
 
-// app.post("/delete-all", (req, res)=>{
-//     if(req.body.delete_all){
-//         db.collection("plans").deleteMany(()=>{
-//             res.json({state: "all plans deleted"});
-//         })
-//     }
-// })
+const server = http.createServer(app); // single thread shu yerda
+// SOCKET.IO BACKEND SERVER
+const io = require("socket.io")(server, {
+  serveClient: false,
+  origins: "*:*",
+  transport: ["websocket", "xhr-polling"],
+});
 
-// app.get("/author", (req, res)=>{
-//     res.render("author", {user: user});
-// });
+let online_users = 0;
+io.on("connection", function (socket) {
+  online_users++;
+  console.log("New user, total:", online_users);
+  socket.emit("greetMsg", { text: "welcome" });
+  io.emit("infoMsg", { total: online_users });
+  socket.on("disconnect", function () {
+    online_users--;
+    socket.broadcast.emit("infoMsg", { total: online_users });
+    console.log("client disconnected, total:", online_users);
+  });
 
-// app.get("/", function(req, res){
-//     console.log("user entered /");
-//     db.collection("plans")
-//     .find()
-//     .toArray((err, data) => {
-//         if(err){
-//             console.log(err);
-//             res.end("something went wrong");
-//         }else{
-//             res.render("reja", {items: data});
-//         }
-//     });
-// });
+  socket.on("createMsg", function (data) {
+    console.log(data);
+    io.emit("newMsg", data);
+  });
+  // socket.emit() // faqatgina ulangan odamga junatilgan xabar
+  // socket.broadcast.emit()// ulangan userdan tashqari qolgan userlarga jo'natiladigan xabar
+  // io.emit()//hammage
+});
 
-module.exports = app;
+module.exports = server;
