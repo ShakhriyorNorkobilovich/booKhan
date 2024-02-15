@@ -48,7 +48,7 @@ app.set("views", "views");
 app.set("view engine", "ejs");
 
 // 4 Routing code
-app.use("/resto", router_bssr); //for  BSSR
+app.use("/ho", router_bssr); //for  BSSR
 app.use("/", router); // for restAPI ::: har qanday kelgan requestni router filega yubor;
 
 
