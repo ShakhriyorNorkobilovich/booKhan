@@ -13,7 +13,7 @@
             </li>
 
             <li class="nav-item" style="cursor: pointer">
-               <a class="nav-link " href="/ho/products/menu">MyResto</a>
+               <a class="nav-link " href="/ho/products/menu">MyHotel</a>
             </li>
 
             <li class="nav-item" style="cursor: pointer">
@@ -32,7 +32,6 @@
                     <thead class="thead-light">
                         <th scope="col">T/r</th>
                         <th scope="col">Mehmonxona Nomi</th>
-                        <th scope="col">Mehmonxona Turi</th>
                         <th scope="col">Mehmonxona Class</th>
                         <th scope="col">Mehmonxona Narxi</th>
                         <th scope="col">Mehmonxona Holati</th>
@@ -43,12 +42,7 @@
                             <td><%= key + 1 %></td>
                             <td><%= value.product_name %></td>
                             <td><%= value.product_collection %></td>
-                            <td>
-                                <%= value.product_collection === 'drink' ? value.product_volume 
-                                : value.product_size %>
-                            </td>
                             <td><%= value.product_price %></td>
-                            <td><%= value.product_left_cnt %></td>
                             <td>
                                 <select class="spec_select new_product_status" id="<%= value._id %>">
                                     <option value="PAUSED" <%= value.product_status === 'PAUSED' ? 'selected' : '' %> >PAUSED</option>
@@ -92,10 +86,10 @@
                     <div class="half_input">
                         <label for="">Mehmonxona Turi</label>
                         <select class="product_collection" name="product_collection" id="">
-                            <option value="dish" selected>Mehmonxona</option>
-                            <option value="salad">Salat</option>
-                            <option value="dessert">Desert</option>
-                            <option value="drink">Ichimlik</option>
+                            <option value="standard" selected>Standart</option>
+                            <option value="first_class">Birinchi class</option>
+                            <option value="VIP">VIP</option>
+                            <option value="VIP_family">VIP + oila</option>
                             <option value="etc">Boshqalar</option>
                         </select>
                     </div>
@@ -106,18 +100,6 @@
                             <option value="small">Kichkina</option>
                             <option value="normal" selected>O'rtacha</option>
                             <option value="large">Katta</option>
-                            <option value="set">Set</option>
-                        </select>
-                    </div>
-
-                    <div class="half_input" id="product_volume" style="display: none;">
-                        <label for="">Ichimlik Hajmi</label>
-                        <select class="product_volume" name="product_volume" id="">
-                            <option value="0.5">0.5 litr</option>
-                            <option value="1" selected>1 litr</option>
-                            <option value="1.2">1.2 litr</option>
-                            <option value="1.5">1.5 litr</option>
-                            <option value="2">2 litr</option>
                         </select>
                     </div>
                 </div>
@@ -151,7 +133,7 @@
                             <input type="file" id="file" name="product_images" class="image_five" onchange="previewFileHandler(this, 5)">
                         </div>
 
-                        <input value="<%= member._id %>" name="restaurant_id" class="restaurant_id" hidden>
+                        <input value="<%= member._id %>" name="hotel_id" class="restaurant_id" hidden>
 
                     </div>
                 </div>
@@ -171,19 +153,6 @@
    <script>
     $(function () {
 
-        $(".product_collection").on("change", () => {
-            const selected_value = $(".product_collection").val();
-            if(selected_value === 'drink') {
-                $("#product_volume").show();
-                $("#product_size").hide();
-            } else {
-                $("#product_volume").hide();
-                $("#product_size").show();
-            }
-        });
-
-
-
         $(".hiding_btn").on("click", () => {
             $(".dish_container").slideToggle(500);
             $(".hiding_btn").css("display", "none");
@@ -196,7 +165,7 @@
             const product_status = $(`#${id}.new_product_status`).val();
 
             try{
-                const response = await axios.post(`/resto/products/edit/${id}`,{id: id, product_status: product_status});
+                const response = await axios.post(`/ho/products/edit/${id}`,{id: id, product_status: product_status});
                 const result = response.data;
                 console.log('result', result);
 
@@ -216,18 +185,16 @@
 
     function validateForm(){
         const 
-            restaurant_mb_id = $(".restaurant_mb_id").val(),
+            hotel_mb_id = $(".hotel_mb_id").val(),
             product_name = $(".product_name").val(),
             product_price = $(".product_price").val(),
-            product_left_cnt = $(".product_left_cnt").val(),
             product_collection = $(".product_collection").val(),
             product_description = $(".product_description").val(),
             product_status = $(".product_status").val();
         if(
-            restaurant_mb_id =='' || 
+            hotel_mb_id =='' || 
             product_name =='' || 
             product_price =='' || 
-            product_left_cnt == '' || 
             product_collection == '' || 
             product_description =='' ||
             product_status == '') {

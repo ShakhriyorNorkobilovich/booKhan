@@ -122,7 +122,7 @@ hotelController.getMyHotelProducts = async (req, res) => {
       
     } catch(err) {
         console.log(`ERROR, cont/getMyHotelProducts, ${err.message}`);
-        res.redirect('/resto');
+        res.redirect('/ho');
     }
 }
 
@@ -188,7 +188,7 @@ hotelController.validateAdmin = (req, res, next) => {
         const html = 
             `<script> 
                 alert('Admin page: Permission denied');
-                window.location.replace('/resto');
+                window.location.replace('/ho');
             </script>`;
         res.end(html);
     }

@@ -3,7 +3,6 @@ const {
     product_collection_enums, 
     product_status_enums, 
     product_size_enums, 
-    product_volume_enums,
 } = require("../lib/config");
 const Schema = mongoose.Schema;
 
@@ -39,13 +38,13 @@ const productSchema = new mongoose.Schema({
     },
     product_left_cnt:{
         type: Number, 
-        required: true,
+        required: false,
     },
     product_size:{
         type: String, 
         default: 'normal', 
         required: function(){
-            const sized_list = ['dish', 'salad', 'desert'];
+            const sized_list = ['standard', 'first_class', 'VIP', "VIP_family"];
             return sized_list.includes(this.product_collection)
         },
         enum: {
@@ -53,17 +52,17 @@ const productSchema = new mongoose.Schema({
             message: "{VALUE} is not among permitted enum values",
         }
     },
-    product_volume:{
-        type: Number, 
-        default: 1, 
-        required: function(){
-            return (this.product_collection === "drink")
-        },
-        enum: {
-            values: product_volume_enums,
-            message: "{VALUE} is not among permitted enum values",
-        }
-    },
+    // product_volume:{
+    //     type: Number, 
+    //     default: 0, 
+    //     required: function(){
+    //         return (this.product_collection === "drink")
+    //     },
+    //     enum: {
+    //         values: product_volume_enums,
+    //         message: "{VALUE} is not among permitted enum values",
+    //     }
+    // },
     product_description: {type: String, required: true},
     product_images: {type: Array, required: false, default: []},
     product_likes: {
@@ -76,7 +75,7 @@ const productSchema = new mongoose.Schema({
         required: false, 
         default:0
     },
-    restaurant_mb_id:{
+    hotel_mb_id:{
         type: Schema.Types.ObjectId,
         ref: "Member", 
         required: false
@@ -84,7 +83,7 @@ const productSchema = new mongoose.Schema({
 }, {timestamps: true}); //createAt, updateAt
 
 productSchema.index(
-    {restaurant_mb_id: 1, product_name: 1, product_size: 1, product_volume: 1,}, 
+    {hotel_mb_id: 1, product_name: 1, product_size: 1, product_volume: 1,}, 
     {unique: true}
 );
 

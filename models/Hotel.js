@@ -80,7 +80,7 @@ class Hotel {
 
 
 
-    async getAllRestaurantsData() {
+    async getAllHotelsData() {
         try{
             let result = await this.memberModel
             .find({
@@ -95,7 +95,7 @@ class Hotel {
         }
     }
 
-    async updateRestaurantByAdminData(update_data) {
+    async updateHotelByAdminData(update_data) {
         try{
             const id = shapeIntoMongooseObjectId(update_data?.id);
             const result = await this.memberModel

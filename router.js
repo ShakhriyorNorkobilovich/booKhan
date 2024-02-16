@@ -87,7 +87,7 @@ router.get(
 );
 
 router.get(
-  "/restaurants/:id",
+  "/hotels/:id",
   memberController.retrieveAuthMember,
   hotelController.getChosenHotel
 );
